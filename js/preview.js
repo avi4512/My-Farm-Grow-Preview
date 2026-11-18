@@ -43,9 +43,12 @@ loadCart = () => {};
 updateCartBadge = () => {};
 
 const _fullNavigate = window.navigate;
-window.navigate = function (view) {
-  if (!PREVIEW_VIEWS.has(view)) { notify(PREVIEW_MESSAGE); return; }
-  _fullNavigate(view);
+window.navigate = function (view, options) {
+  if (!PREVIEW_VIEWS.has(view)) {
+    if (options?.fromHistory) { _fullNavigate("home", options); return; }
+    notify(PREVIEW_MESSAGE); return;
+  }
+  _fullNavigate(view, options);
 };
 
 getProductImage = p => p.image || "";
