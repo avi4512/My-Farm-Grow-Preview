@@ -264,12 +264,12 @@
     <div id="mobile-nav" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 sm:px-6 py-1">
       <button onclick="mobileNavGo('home')">Home</button>
       <button onclick="mobileNavGo('products')">Products</button>
-      <button onclick="openSearch(); closeMobileNav()">Search</button>
+      <button onclick="openSearch(); dismissMobileNav()">Search</button>
       <button onclick="mobileNavGo('about')">About</button>
       <button onclick="mobileNavGo('contact')">Contact</button>
       <button onclick="mobileNavGo('orders')">My Orders</button>
       <button id="mobile-nav-admin" class="hidden" onclick="mobileNavGo('admin')">Admin Dashboard</button>
-      <button id="mobile-nav-account" onclick="openAccount(); closeMobileNav()">Login / Register</button>
+      <button id="mobile-nav-account" onclick="openAccount(); dismissMobileNav()">Login / Register</button>
     </div>
   </header>
 
@@ -920,10 +920,10 @@
       <div>
         <h4 class="text-white font-semibold mb-3">Quick Links</h4>
         <ul class="space-y-2 text-xs">
-          <li><a href="#" onclick="navigate('home')" class="hover:text-white">Home</a></li>
-          <li><a href="#" onclick="navigate('products')" class="hover:text-white">Products</a></li>
-          <li><a href="#" onclick="navigate('about')" class="hover:text-white">About Us</a></li>
-          <li><a href="#" onclick="navigate('contact')" class="hover:text-white">Contact</a></li>
+          <li><a href="#" onclick="navigate('home'); return false" class="hover:text-white">Home</a></li>
+          <li><a href="#" onclick="navigate('products'); return false" class="hover:text-white">Products</a></li>
+          <li><a href="#" onclick="navigate('about'); return false" class="hover:text-white">About Us</a></li>
+          <li><a href="#" onclick="navigate('contact'); return false" class="hover:text-white">Contact</a></li>
         </ul>
       </div>
 
@@ -1120,12 +1120,21 @@
       const panel = document.getElementById("mobile-nav");
       const open = panel.classList.toggle("hidden") === false;
       document.getElementById("mobile-nav-toggle").setAttribute("aria-expanded", String(open));
+      // Give the open menu its own history entry so the phone's back button closes it
+      // instead of leaving the site.
+      if (open) history.pushState({...(history.state || {}), menu: true}, "", location.href);
+      else if (history.state?.menu) history.back();
     }
     function closeMobileNav() {
       document.getElementById("mobile-nav").classList.add("hidden");
       document.getElementById("mobile-nav-toggle").setAttribute("aria-expanded", "false");
     }
-    function mobileNavGo(viewName) { closeMobileNav(); navigate(viewName); }
+    // Close the menu and drop its history entry when no navigation took its place.
+    function dismissMobileNav() {
+      closeMobileNav();
+      if (history.state?.menu) history.back();
+    }
+    function mobileNavGo(viewName) { closeMobileNav(); navigate(viewName); if (history.state?.menu) history.back(); }
     function openSearch() {
       navigate("products");
       document.getElementById("search-input").focus({preventScroll: true});
@@ -1508,7 +1517,16 @@
       if (customerWrap && !customerWrap.contains(event.target)) closeCustomerMenu();
     });
 
-    function navigate(viewName) {
+    // Each view change is recorded in browser history so the phone's back button
+    // steps back through the site instead of closing it.
+    function viewState(viewName) { return {view: viewName, category: selectedCategory}; }
+    function recordView(viewName) {
+      const state = viewState(viewName), current = history.state;
+      const url = viewName === "home" ? location.pathname + location.search : `#${viewName}`;
+      if (!current || current.menu || (current.view === state.view && current.category === state.category)) history.replaceState(state, "", url);
+      else history.pushState(state, "", url);
+    }
+    function navigate(viewName, options = {}) {
       document.querySelectorAll(".view-panel").forEach(el => el.classList.add("hidden"));
       const view = document.getElementById(`view-${viewName}`);
       if (view) view.classList.remove("hidden");
@@ -1525,7 +1543,7 @@
       if (viewName === "admin" || viewName === "deliveries" || viewName === "inventory" || viewName === "inventory-history") {
         if (!currentUser || currentUser.role !== "admin") {
           notify("Administrator access is required.");
-          navigate("home");
+          navigate("home", options);
           return;
         }
         if (viewName === "admin") loadAdminOrders();
@@ -1533,16 +1551,28 @@
         if (viewName === "inventory") loadAdminInventory();
         if (viewName === "inventory-history") loadInventoryHistoryView();
       }
+      if (!options.fromHistory) recordView(viewName);
       window.scrollTo({top:0, behavior:"smooth"});
     }
-    function filterCategory(category) {
+    function setSelectedCategory(category) {
       selectedCategory = category;
       document.querySelectorAll(".cat-btn").forEach(btn => {
         const active = btn.getAttribute("data-category") === category;
         btn.className = `cat-btn w-full text-left px-3 py-2 rounded-lg ${active ? "bg-brand-50 text-brand-700 font-semibold" : "hover:bg-stone-50 text-stone-600"}`;
       });
+    }
+    function filterCategory(category) {
+      setSelectedCategory(category);
       navigate("products");
     }
+    window.addEventListener("popstate", event => {
+      const state = event.state || {view: "home", category: "All"};
+      closeMobileNav();
+      if (!document.getElementById("account-modal").classList.contains("hidden")) closeAccount();
+      if (state.menu) return;
+      if (state.category && state.category !== selectedCategory) setSelectedCategory(state.category);
+      navigate(state.view || "home", {fromHistory: true});
+    });
     let searchTimer;
     function handleSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(renderProducts, 250); }
     // Product image paths served by FastAPI from frontend/images/.
@@ -2834,6 +2864,10 @@
       if(token){try{cart=await api("/api/cart");updateCartBadge();}catch{}}
       await loadCatalog();
       await renderProducts();
+      // Open the view named in the address (e.g. #products) and seed the history entry.
+      const startView = location.hash.slice(1);
+      if (startView && startView !== "home" && document.getElementById(`view-${startView}`)) navigate(startView);
+      else history.replaceState(viewState("home"), "", location.href);
     });
   </script>
   <!-- Preview mode: static product list, ordering disabled -->
