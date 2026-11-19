@@ -78,10 +78,6 @@ function chooseSize(id, index) {
 loadCatalog = async function () {
   catalog = PREVIEW_PRODUCTS;
   const categories = [...new Set(catalog.map(p => p.category))].sort();
-  document.getElementById("home-categories").innerHTML = categories.map(c => {
-    const count = catalog.filter(p => p.category === c).length;
-    return `<button class="cat-tile card-fx w-[calc(50%-.5rem)] sm:w-[calc(33.333%-.7rem)] lg:w-[calc(20%-.8rem)]" style="${categoryVars(c)}" data-category="${esc(c)}" onclick="filterCategory(this.dataset.category)"><span class="cat-tile-icon"><i data-lucide="${categoryStyle(c).icon}"></i></span><span class="cat-tile-name">${esc(c)}</span><span class="cat-tile-count">${count} ${count === 1 ? "product" : "products"}</span></button>`;
-  }).join("");
   document.getElementById("category-filter-list").innerHTML = ["All", ...categories].map(c => {
     const active = c === selectedCategory;
     return `<li><button onclick="filterCategory(this.dataset.category)" data-category="${esc(c)}" class="cat-btn w-full text-left px-3 py-2 rounded-lg ${active ? "bg-brand-50 text-brand-700 font-semibold" : "hover:bg-stone-50 text-stone-600"}">${c === "All" ? "All Products" : esc(c)}</button></li>`;
