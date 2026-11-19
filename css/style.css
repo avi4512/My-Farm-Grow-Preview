@@ -309,9 +309,7 @@ body { background: var(--paper); color: var(--ink); }
   #view-home .section-lede { display: none; }
 
   /* Home: categories as a swipeable row */
-  #home-categories { flex-wrap: nowrap !important; justify-content: flex-start !important; gap: .5rem !important; min-height: 0 !important; margin: 0 -1rem; padding: 0 1rem; overflow-x: auto; scrollbar-width: none; }
-  #home-categories::-webkit-scrollbar, .tab-pills::-webkit-scrollbar, #category-filter-list::-webkit-scrollbar { display: none; }
-  #home-categories .cat-tile { flex: none; width: 4.75rem !important; min-height: 0; gap: .3rem; padding: 0; border-radius: 0; background: none; color: var(--ink); box-shadow: none !important; }
+  .tab-pills::-webkit-scrollbar, #category-filter-list::-webkit-scrollbar { display: none; }
   .cat-tile-icon { width: 3.25rem; height: 3.25rem; background: var(--cat-bg); color: var(--cat-ink); }
   .cat-tile-icon svg { width: 1.5rem; height: 1.5rem; stroke-width: 1.6; }
   .cat-tile-name { font-family: inherit; font-size: .6875rem; font-weight: 700; }

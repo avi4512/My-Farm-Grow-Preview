@@ -326,18 +326,6 @@
         </div>
       </section>
 
-      <!-- Categories Section -->
-      <section class="relative overflow-hidden py-14 sm:py-16 px-4 sm:px-6 lg:px-8">
-        <svg class="absolute w-40 h-40 -right-10 top-2 hidden sm:block text-[#b9d98f] opacity-40 pointer-events-none" viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><path d="M8 112C4 58 34 14 112 8c2 66-36 106-104 104z"/></svg>
-        <div class="relative max-w-6xl mx-auto">
-          <div class="text-center mb-10">
-            <h2 class="display-heading">Shop by <em>category</em></h2>
-            <p class="section-lede">Everything your kitchen needs, straight from the farm.</p>
-          </div>
-          <div id="home-categories" class="flex flex-wrap justify-center gap-4 min-h-[11.5rem]"></div>
-        </div>
-      </section>
-
       <!-- Products by category -->
       <section class="leaf-section py-12 sm:py-14 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
@@ -1657,10 +1645,6 @@
         return;
       }
       const categories = [...new Set(catalog.map(p => p.category).filter(Boolean))].sort();
-      document.getElementById("home-categories").innerHTML = categories.map(c => {
-        const count = catalog.filter(p => p.category === c).length;
-        return `<button class="cat-tile card-fx w-[calc(50%-.5rem)] sm:w-[calc(33.333%-.7rem)] lg:w-[calc(20%-.8rem)]" style="${categoryVars(c)}" data-category="${esc(c)}" onclick="filterCategory(this.dataset.category)"><span class="cat-tile-icon"><i data-lucide="${categoryStyle(c).icon}"></i></span><span class="cat-tile-name">${esc(c)}</span><span class="cat-tile-count">${count} ${count === 1 ? "product" : "products"}</span></button>`;
-      }).join("");
       document.getElementById("category-filter-list").innerHTML = ["All", ...categories].map(c => {
         const active = c === selectedCategory;
         return `<li><button onclick="filterCategory(this.dataset.category)" data-category="${esc(c)}" class="cat-btn w-full text-left px-3 py-2 rounded-lg ${active ? "bg-brand-50 text-brand-700 font-semibold" : "hover:bg-stone-50 text-stone-600"}">${c === "All" ? "All Products" : esc(c)}</button></li>`;
