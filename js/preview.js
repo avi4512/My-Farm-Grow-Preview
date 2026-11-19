@@ -70,7 +70,9 @@ function chooseSize(id, index) {
   chosenSize[id] = index;
   const p = PREVIEW_PRODUCTS.find(x => x.id === id);
   document.querySelectorAll(`[data-price-for="${id}"]`).forEach(el => { el.innerHTML = priceHtml(p); });
-  document.querySelectorAll(`[aria-label="Bag size for ${CSS.escape(p.name)}"] button`).forEach((b, i) => b.setAttribute("aria-pressed", String(i === index)));
+  // Number the buttons inside each group: the product can be on the page more than once.
+  document.querySelectorAll(`[aria-label="Bag size for ${CSS.escape(p.name)}"]`).forEach(group =>
+    group.querySelectorAll("button").forEach((b, i) => b.setAttribute("aria-pressed", String(i === index))));
 }
 
 loadCatalog = async function () {
